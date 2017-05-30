@@ -25,6 +25,7 @@ extension = sgs.Package("wizard")
 --sgs.General(扩展包,姓名,所属势力,体力上限,性别,是否隐藏,是否完全隐藏)
 
 anlushan = sgs.General(extension, "anlushan","wu", 4, true)
+mayun = sgs.General(extension, "mayun","wu", 4, true)
 
 wizard_qinding = sgs.CreateTriggerSkill{
 	name = "wizard_qinding",
@@ -84,8 +85,20 @@ wizard_lianren = sgs.CreateTriggerSkill{
 	end
 }
 
+wizard_guisuo = sgs.CreateMaxCardsSkill
+{
+    name = "wizard_guisuo",
+    extra_func = function(self, target)
+        if target:hasSkill(self:objectName()) then
+            return 160
+        end
+    end
+}
+
 anlushan:addSkill(wizard_qinding)
 anlushan:addSkill(wizard_lianren)
+
+mayun:addSkill(wizard_guisuo)
 
 sgs.LoadTranslationTable{
 
@@ -100,4 +113,8 @@ sgs.LoadTranslationTable{
 	
 	["wizard_lianren"] = "连任",
 	[":wizard_lianren"] = "若你于出牌阶段使用了至少一张红色牌，回合结束开始时，你可以进行一个额外的回合。",
+    
+    ["mayun"] = "马云",
+    ["wizard_guisuo"] = "龟缩",
+	[":wizard_qinding"] = "<b>锁定技，你的手牌无上限</b>",
 }

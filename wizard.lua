@@ -26,6 +26,7 @@ extension = sgs.Package("wizard")
 
 anlushan = sgs.General(extension, "anlushan","wu", 4, true)
 mayun = sgs.General(extension, "mayun","wu", 4, true)
+jianbi = sgs.General(extension, "jianbi","wu", 3, true)
 
 wizard_qinding = sgs.CreateTriggerSkill{
 	name = "wizard_qinding",
@@ -95,10 +96,74 @@ wizard_guisuo = sgs.CreateMaxCardsSkill
     end
 }
 
+wizard_taowang = sgs.CreateTriggerSkill {
+	name = "wizard_taowang",
+	events = {sgs.HpRecover},
+	frequency = sgs.Skill_Compulsory, 
+	on_trigger = function(self, event, player, data)
+		if event == sgs.HpRecover then
+			local room = player:getRoom()
+            local theRecover = data:toRecover()
+            if theRecover.who:hasSkill(self:objectName()) then
+                local card = theRecover.card
+                if card:isKindOf("Peach") or card:isKindOf("GodSalvation") then
+                -- Bad news: not work.
+                -- TODO: try another way
+                    local count = theRecover.recover
+                    theRecover.recover = count + 1
+                    data:setValue(theRecover)
+                    print("Done", theRecover.recover)
+                    return true
+                end
+            end
+            local count = theRecover.recover
+		end
+	end,
+    
+    can_trigger = function(self, target)
+        return target:isAlive()
+    end,
+}
+
+wizard_taobian = sgs.CreateTriggerSkill {
+	name = "wizard_taobian",
+	events = {sgs.TargetConfirmed},
+	frequency = sgs.Skill_NotFrequent, 
+	on_trigger = function(self, event, player, data)
+        local room = player:getRoom()
+        local use = data:toCardUse()
+        
+        if use.card:isKindOf("Peach") then
+            jianbi = room:findPlayerBySkillName(self:objectName())
+            if not room:askForSkillInvoke(jianbi, self:objectName()) then
+                return false
+            end
+            
+            local nullified_list = use.nullified_list
+            for _, p in sgs.qlist(use.to) do
+                table.insert(nullified_list, p:objectName())
+            end
+			use.nullified_list = nullified_list
+			data:setValue(use)
+            print("Peach is of no use")
+                
+            -- TODO: judge and handling all passible suits
+        end
+
+	end,
+    --[[
+    can_trigger = function(self, target)
+        return target:isAlive()
+    end,
+    ]]--
+}
 anlushan:addSkill(wizard_qinding)
 anlushan:addSkill(wizard_lianren)
 
 mayun:addSkill(wizard_guisuo)
+
+jianbi:addSkill(wizard_taowang)
+jianbi:addSkill(wizard_taobian)
 
 sgs.LoadTranslationTable{
 
@@ -106,7 +171,7 @@ sgs.LoadTranslationTable{
 
 	["anlushan"] = "安禄山",
 	["#anlushan"] = "连任狂膜",
-	["designer:anlushan"] = "Erwin",
+	["designer:anlushan"] = "低调哥",
 	
 	["wizard_qinding"] = "钦定",
 	[":wizard_qinding"] = "<b>锁定技，</b>当你受到无色【杀】的伤害或流失体力后，你将武将牌翻至正面朝上。",
@@ -116,5 +181,15 @@ sgs.LoadTranslationTable{
     
     ["mayun"] = "马云",
     ["wizard_guisuo"] = "龟缩",
-	[":wizard_qinding"] = "<b>锁定技，你的手牌无上限</b>",
+	[":wizard_qinding"] = "<b>锁定技，</b>你的手牌无上限",
+    
+    ["jianbi"] = "坚逼",
+    ["#jianbi"] = "见风是雨",
+    ["designer:jianbi"] = "果先生",
+    ["illustrator:jianbi"] = "低调哥",
+    
+    ["wizard_taowang"] = "桃王",
+    [":wizard_taowang"] = "<b>锁定技，</b>你所使用的【桃】或【桃园结义】回复的体力+1。",
+    
+    ["wizard_taobian"] = "桃变",
 }

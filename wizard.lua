@@ -98,25 +98,46 @@ wizard_guisuo = sgs.CreateMaxCardsSkill
 
 wizard_taowang = sgs.CreateTriggerSkill {
 	name = "wizard_taowang",
-	events = {sgs.HpRecover},
+	events = {sgs.HpRecover, 
+        sgs.TargetConfirmed
+    },
 	frequency = sgs.Skill_Compulsory, 
 	on_trigger = function(self, event, player, data)
+		local room = player:getRoom()
 		if event == sgs.HpRecover then
-			local room = player:getRoom()
             local theRecover = data:toRecover()
             if theRecover.who:hasSkill(self:objectName()) then
                 local card = theRecover.card
                 if card:isKindOf("Peach") or card:isKindOf("GodSalvation") then
-                -- Bad news: not work.
-                -- TODO: try another way
+                -- setValue() seems not to work for RecoverStruct
+                -- Workaround: recover another one HP
                     local count = theRecover.recover
                     theRecover.recover = count + 1
                     data:setValue(theRecover)
-                    print("Done", theRecover.recover)
+                    room:recover(player, sgs.RecoverStruct(nil))
                     return true
                 end
             end
             local count = theRecover.recover
+            
+        -- Another trial: nullified the peach and make a new recover
+        -- But this conflicts with 'taobian'
+        elseif event == sgs.TargetConfirmed then
+            -- Uncomment this return if wanna use this if-else branch
+            if true then
+                return false
+            end
+            
+            local use = data:toCardUse()
+            if use.card:isKindOf("Peach") or use.card:isKindOf("GodSalvation") then
+                nullified_list = use.nullified_list
+                for _, target in sgs.qlist(use.to) do
+                    table.insert(nullified_list, target:objectName())
+                    room:recover(target, sgs.RecoverStruct(nil, 2))
+                end
+                use.nullified_list = nullified_list
+                data:setValue(use)
+            end
 		end
 	end,
     
@@ -133,9 +154,12 @@ wizard_taobian = sgs.CreateTriggerSkill {
         local room = player:getRoom()
         local use = data:toCardUse()
         
+        -- XXX: Misbehaves if multiple players has this skill
+        -- Probably because room:findPlayerBySkillName() does not return a single player object
         if use.card:isKindOf("Peach") then
             -- This seems unnecessary as 'jianbi' is always 'player'
             jianbi = room:findPlayerBySkillName(self:objectName())
+            
             if not room:askForSkillInvoke(jianbi, self:objectName()) then
                 return false
             end
@@ -153,17 +177,14 @@ wizard_taobian = sgs.CreateTriggerSkill {
             judge.good = true
             judge.reason = self:objectName()
             room:judge(judge)
+            local from = use.from
             local suit = judge.card:getSuit()
             if suit == sgs.Card_Spade then
-                for _, target in sgs.qlist(use.to) do
-                    room:loseHp(target, 1)
-                end
+                room:loseHp(from, 1)
             elseif suit == sgs.Card_Heart then
                 jianbi:obtainCard(use.card)
             elseif suit == sgs.Card_Club then
-                for _, target in sgs.qlist(use.to) do
-                    room:askForDiscard(target, self:objectName(), 2, 2, false, true)
-                end
+                room:askForDiscard(from, self:objectName(), 2, 2, false, true)
             elseif suit == sgs.Card_Diamond then
                 local beneficiary = room:askForPlayerChosen(jianbi, room:getAlivePlayers(), self:objectName(), "wizard_taobian_draw", true, true)
                 if beneficiary then

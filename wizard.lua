@@ -146,7 +146,6 @@ wizard_taobian = sgs.CreateTriggerSkill {
             end
 			use.nullified_list = nullified_list
 			data:setValue(use)
-            print("Peach is of no use")
                 
             local judge = sgs.JudgeStruct()
             judge.who = jianbi
@@ -180,6 +179,32 @@ wizard_taobian = sgs.CreateTriggerSkill {
     end,
     ]]--
 }
+
+wizard_houzhou = sgs.CreateTriggerSkill {
+	name = "wizard_houzhou",
+	events = {sgs.Death},
+	frequency = sgs.Skill_Compulsory, 
+	on_trigger = function(self, event, player, data)
+        local room = player:getRoom()        
+        local death = data:toDeath()
+        if death.who:objectName() ~= player:objectName() then
+            return false
+        end
+        
+        if not (death.damage and death.damage.from) then
+            return false
+        end
+        
+        local murderer = death.damage.from
+        room:setPlayerCardLimitation(murderer, "use", "Peach", false)
+	end,
+    
+    can_trigger = function(self, target)
+        return target and target:hasSkill(self:objectName())
+    end,
+}
+
+
 anlushan:addSkill(wizard_qinding)
 anlushan:addSkill(wizard_lianren)
 
@@ -187,6 +212,7 @@ mayun:addSkill(wizard_guisuo)
 
 jianbi:addSkill(wizard_taowang)
 jianbi:addSkill(wizard_taobian)
+jianbi:addSkill(wizard_houzhou)
 
 sgs.LoadTranslationTable{
 
@@ -217,4 +243,7 @@ sgs.LoadTranslationTable{
     ["wizard_taobian"] = "桃变",
     [":wizard_taobian"] = "每当场上的角色使用【桃】时，你可以令其不能回复一点体力并进行一次判定：\n黑桃：该角色失去1点体力；\n红桃：你获得这张【桃】；\n梅花：该角色须弃置两张牌；\n方块：你可以令一名角色摸两张牌。",    
     ["wizard_taobian_draw"] = "选择一名角色令其摸两张牌",
+    
+    ["wizard_houzhou"] = "猴咒",
+    [":wizard_houzhou"] = "<b>锁定技，</b>杀死你的角色不可使用【桃】。",
 }

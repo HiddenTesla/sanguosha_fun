@@ -134,6 +134,7 @@ wizard_taobian = sgs.CreateTriggerSkill {
         local use = data:toCardUse()
         
         if use.card:isKindOf("Peach") then
+            -- This seems unnecessary as 'jianbi' is always 'player'
             jianbi = room:findPlayerBySkillName(self:objectName())
             if not room:askForSkillInvoke(jianbi, self:objectName()) then
                 return false
@@ -147,7 +148,29 @@ wizard_taobian = sgs.CreateTriggerSkill {
 			data:setValue(use)
             print("Peach is of no use")
                 
-            -- TODO: judge and handling all passible suits
+            local judge = sgs.JudgeStruct()
+            judge.who = jianbi
+            judge.pattern = "."
+            judge.good = true
+            judge.reason = self:objectName()
+            room:judge(judge)
+            local suit = judge.card:getSuit()
+            if suit == sgs.Card_Spade then
+                for _, target in sgs.qlist(use.to) do
+                    room:loseHp(target, 1)
+                end
+            elseif suit == sgs.Card_Heart then
+                jianbi:obtainCard(use.card)
+            elseif suit == sgs.Card_Club then
+                for _, target in sgs.qlist(use.to) do
+                    room:askForDiscard(target, self:objectName(), 2, 2, false, true)
+                end
+            elseif suit == sgs.Card_Diamond then
+                local beneficiary = room:askForPlayerChosen(jianbi, room:getAlivePlayers(), self:objectName(), "wizard_taobian_draw", true, true)
+                if beneficiary then
+                    beneficiary:drawCards(2)
+                end
+            end
         end
 
 	end,
@@ -192,4 +215,6 @@ sgs.LoadTranslationTable{
     [":wizard_taowang"] = "<b>锁定技，</b>你所使用的【桃】或【桃园结义】回复的体力+1。",
     
     ["wizard_taobian"] = "桃变",
+    [":wizard_taobian"] = "每当场上的角色使用【桃】时，你可以令其不能回复一点体力并进行一次判定：\n黑桃：该角色失去1点体力；\n红桃：你获得这张【桃】；\n梅花：该角色须弃置两张牌；\n方块：你可以令一名角色摸两张牌。",    
+    ["wizard_taobian_draw"] = "选择一名角色令其摸两张牌",
 }

@@ -26,6 +26,7 @@ extension = sgs.Package("wizard")
 
 anlushan = sgs.General(extension, "anlushan","wu", 4, true)
 mayun = sgs.General(extension, "mayun","wu", 4, true)
+jianbi = sgs.General(extension, "jianbi","wu", 3, true)
 
 wizard_qinding = sgs.CreateTriggerSkill{
 	name = "wizard_qinding",
@@ -95,10 +96,144 @@ wizard_guisuo = sgs.CreateMaxCardsSkill
     end
 }
 
+wizard_taowang = sgs.CreateTriggerSkill {
+	name = "wizard_taowang",
+	events = {sgs.HpRecover, 
+        sgs.TargetConfirmed
+    },
+	frequency = sgs.Skill_Compulsory, 
+	on_trigger = function(self, event, player, data)
+		local room = player:getRoom()
+		if event == sgs.HpRecover then
+            local theRecover = data:toRecover()
+            if theRecover.who:hasSkill(self:objectName()) then
+                local card = theRecover.card
+                if card:isKindOf("Peach") or card:isKindOf("GodSalvation") then
+                -- setValue() seems not to work for RecoverStruct
+                -- Workaround: recover another one HP
+                    local count = theRecover.recover
+                    theRecover.recover = count + 1
+                    data:setValue(theRecover)
+                    room:recover(player, sgs.RecoverStruct(nil))
+                    return true
+                end
+            end
+            local count = theRecover.recover
+            
+        -- Another trial: nullified the peach and make a new recover
+        -- But this conflicts with 'taobian'
+        elseif event == sgs.TargetConfirmed then
+            -- Uncomment this return if wanna use this if-else branch
+            if true then
+                return false
+            end
+            
+            local use = data:toCardUse()
+            if use.card:isKindOf("Peach") or use.card:isKindOf("GodSalvation") then
+                nullified_list = use.nullified_list
+                for _, target in sgs.qlist(use.to) do
+                    table.insert(nullified_list, target:objectName())
+                    room:recover(target, sgs.RecoverStruct(nil, 2))
+                end
+                use.nullified_list = nullified_list
+                data:setValue(use)
+            end
+		end
+	end,
+    
+    can_trigger = function(self, target)
+        return target:isAlive()
+    end,
+}
+
+wizard_taobian = sgs.CreateTriggerSkill {
+	name = "wizard_taobian",
+	events = {sgs.TargetConfirmed},
+	frequency = sgs.Skill_NotFrequent, 
+	on_trigger = function(self, event, player, data)
+        local room = player:getRoom()
+        local use = data:toCardUse()
+        
+        -- XXX: Misbehaves if multiple players has this skill
+        -- Probably because room:findPlayerBySkillName() does not return a single player object
+        if use.card:isKindOf("Peach") then
+            -- This seems unnecessary as 'jianbi' is always 'player'
+            jianbi = room:findPlayerBySkillName(self:objectName())
+            
+            if not room:askForSkillInvoke(jianbi, self:objectName()) then
+                return false
+            end
+            
+            local nullified_list = use.nullified_list
+            for _, p in sgs.qlist(use.to) do
+                table.insert(nullified_list, p:objectName())
+            end
+			use.nullified_list = nullified_list
+			data:setValue(use)
+                
+            local judge = sgs.JudgeStruct()
+            judge.who = jianbi
+            judge.pattern = "."
+            judge.good = true
+            judge.reason = self:objectName()
+            room:judge(judge)
+            local from = use.from
+            local suit = judge.card:getSuit()
+            if suit == sgs.Card_Spade then
+                room:loseHp(from, 1)
+            elseif suit == sgs.Card_Heart then
+                jianbi:obtainCard(use.card)
+            elseif suit == sgs.Card_Club then
+                room:askForDiscard(from, self:objectName(), 2, 2, false, true)
+            elseif suit == sgs.Card_Diamond then
+                local beneficiary = room:askForPlayerChosen(jianbi, room:getAlivePlayers(), self:objectName(), "wizard_taobian_draw", true, true)
+                if beneficiary then
+                    beneficiary:drawCards(2)
+                end
+            end
+        end
+
+	end,
+    --[[
+    can_trigger = function(self, target)
+        return target:isAlive()
+    end,
+    ]]--
+}
+
+wizard_houzhou = sgs.CreateTriggerSkill {
+	name = "wizard_houzhou",
+	events = {sgs.Death},
+	frequency = sgs.Skill_Compulsory, 
+	on_trigger = function(self, event, player, data)
+        local room = player:getRoom()        
+        local death = data:toDeath()
+        if death.who:objectName() ~= player:objectName() then
+            return false
+        end
+        
+        if not (death.damage and death.damage.from) then
+            return false
+        end
+        
+        local murderer = death.damage.from
+        room:setPlayerCardLimitation(murderer, "use", "Peach", false)
+	end,
+    
+    can_trigger = function(self, target)
+        return target and target:hasSkill(self:objectName())
+    end,
+}
+
+
 anlushan:addSkill(wizard_qinding)
 anlushan:addSkill(wizard_lianren)
 
 mayun:addSkill(wizard_guisuo)
+
+jianbi:addSkill(wizard_taowang)
+jianbi:addSkill(wizard_taobian)
+jianbi:addSkill(wizard_houzhou)
 
 sgs.LoadTranslationTable{
 
@@ -106,7 +241,7 @@ sgs.LoadTranslationTable{
 
 	["anlushan"] = "安禄山",
 	["#anlushan"] = "连任狂膜",
-	["designer:anlushan"] = "Erwin",
+	["designer:anlushan"] = "低调哥",
 	
 	["wizard_qinding"] = "钦定",
 	[":wizard_qinding"] = "<b>锁定技，</b>当你受到无色【杀】的伤害或流失体力后，你将武将牌翻至正面朝上。",
@@ -116,5 +251,20 @@ sgs.LoadTranslationTable{
     
     ["mayun"] = "马云",
     ["wizard_guisuo"] = "龟缩",
-	[":wizard_qinding"] = "<b>锁定技，你的手牌无上限</b>",
+	[":wizard_qinding"] = "<b>锁定技，</b>你的手牌无上限",
+    
+    ["jianbi"] = "坚逼",
+    ["#jianbi"] = "见风是雨",
+    ["designer:jianbi"] = "果先生",
+    ["illustrator:jianbi"] = "低调哥",
+    
+    ["wizard_taowang"] = "桃王",
+    [":wizard_taowang"] = "<b>锁定技，</b>你所使用的【桃】或【桃园结义】回复的体力+1。",
+    
+    ["wizard_taobian"] = "桃变",
+    [":wizard_taobian"] = "每当场上的角色使用【桃】时，你可以令其不能回复一点体力并进行一次判定：\n黑桃：该角色失去1点体力；\n红桃：你获得这张【桃】；\n梅花：该角色须弃置两张牌；\n方块：你可以令一名角色摸两张牌。",    
+    ["wizard_taobian_draw"] = "选择一名角色令其摸两张牌",
+    
+    ["wizard_houzhou"] = "猴咒",
+    [":wizard_houzhou"] = "<b>锁定技，</b>杀死你的角色不可使用【桃】。",
 }

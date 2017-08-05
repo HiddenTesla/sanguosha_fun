@@ -251,7 +251,7 @@ sgs.LoadTranslationTable{
     
     ["mayun"] = "马云",
     ["wizard_guisuo"] = "龟缩",
-	[":wizard_qinding"] = "<b>锁定技，</b>你的手牌无上限",
+	[":wizard_guisuo"] = "<b>锁定技，</b>你的手牌无上限",
     
     ["jianbi"] = "坚逼",
     ["#jianbi"] = "见风是雨",

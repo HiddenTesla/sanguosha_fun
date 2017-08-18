@@ -98,51 +98,30 @@ wizard_guisuo = sgs.CreateMaxCardsSkill
 
 wizard_taowang = sgs.CreateTriggerSkill {
 	name = "wizard_taowang",
-	events = {sgs.HpRecover, 
-        sgs.TargetConfirmed
-    },
+	events = {sgs.TargetConfirmed, sgs.PreHpRecover},
 	frequency = sgs.Skill_Compulsory, 
 	on_trigger = function(self, event, player, data)
 		local room = player:getRoom()
-		if event == sgs.HpRecover then
-            local theRecover = data:toRecover()
-            if theRecover.who:hasSkill(self:objectName()) then
-                local card = theRecover.card
-                if card:isKindOf("Peach") or card:isKindOf("GodSalvation") then
-                -- setValue() seems not to work for RecoverStruct
-                -- Workaround: recover another one HP
-                    local count = theRecover.recover
-                    theRecover.recover = count + 1
-                    data:setValue(theRecover)
-                    room:recover(player, sgs.RecoverStruct(nil))
-                    return true
-                end
-            end
-            local count = theRecover.recover
-            
-        -- Another trial: nullified the peach and make a new recover
-        -- But this conflicts with 'taobian'
-        elseif event == sgs.TargetConfirmed then
-            -- Uncomment this return if wanna use this if-else branch
-            if true then
-                return false
-            end
-            
+        if event == sgs.TargetConfirmed then
             local use = data:toCardUse()
-            if use.card:isKindOf("Peach") or use.card:isKindOf("GodSalvation") then
-                nullified_list = use.nullified_list
-                for _, target in sgs.qlist(use.to) do
-                    table.insert(nullified_list, target:objectName())
-                    room:recover(target, sgs.RecoverStruct(nil, 2))
-                end
-                use.nullified_list = nullified_list
-                data:setValue(use)
+            if use.from:hasSkill(self:objectName()) and 
+                    (use.card:isKindOf("Peach") or use.card:isKindOf("GodSalvation")) then
+                
+                room:setCardFlag(use.card, "wizard_taowang")
             end
-		end
-	end,
+        
+        elseif event == sgs.PreHpRecover then           
+			local rec = data:toRecover()
+			if rec.card and rec.card:hasFlag("wizard_taowang") then
+				rec.recover = rec.recover + 1
+				data:setValue(rec)
+            end
+        end
+        
+    end,
     
     can_trigger = function(self, target)
-        return target:isAlive()
+        return target and target:isAlive()
     end,
 }
 

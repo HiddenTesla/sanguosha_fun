@@ -44,6 +44,14 @@ jiangfei = sgs.CreateTriggerSkill{
 			local source = damage.from
 			local currentCount = player:getMark("@baqiNegative")
 			player:gainMark("@baqiNegative", 3 + currentCount * 0.02)
+            
+            -- Give a log
+            local remains = player:getMaxHp() / count
+            local msg = sgs.LogMessage()
+            msg.type = "#jiangfei_loseHp"
+            msg.from = player
+            msg.arg = string.format("%.1f", remains)
+            room:sendLog(msg)            
 
 			if damage.card:isKindOf ("Lightning") then
 				local n=player:getMark("@baqiNegative")
@@ -248,4 +256,7 @@ sgs.LoadTranslationTable{
 	["rigou"]= "哔狗",
 	["gouri"]= "哔狗",
 	["zhenshen2"]="战神",
+    
+    -- LogMessage translation
+	["#jiangfei_loseHp"] = "%from还可以承受%arg次伤害"
 }

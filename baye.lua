@@ -302,6 +302,16 @@ baye = sgs.CreateTriggerSkill{
 			if player:getRole() == "renegade" then
 				room:setPlayerProperty (player, "role", sgs.QVariant("loyalist"))
 			end
+            
+            -- 若是反贼，则询问是否要将主公换为孙权
+            local lord = room:getLord()
+            if not lord:hasSkill("zhiheng") and player:getRole() == "rebel" then
+                local choice = room:askForSkillInvoke(player, "#baye_gamestart_changHero")
+                if choice then
+                    room:changeHero(lord, "BTsunquan", false)
+                end
+            end
+            
 			for _,p in sgs.qlist(playerlist) do
 				if p:getRole() == "renegade" and p:objectName()~=player:objectName() then
 					if player:getRole() == "rebel" then
@@ -551,5 +561,6 @@ sgs.LoadTranslationTable{
 	["bayeQiangxi"]="强X",
 	
 -- LogMessage translation
-	["#baye_gamestart"] = "Your max hp is %arg"
+	["#baye_gamestart"] = "Your max hp is %arg",
+    ["#baye_gamestart_changHero"] = "将主公替换为\"会英姿的孙权\"",
 }

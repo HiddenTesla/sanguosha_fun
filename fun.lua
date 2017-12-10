@@ -560,22 +560,21 @@ gangbi = sgs.CreateTriggerSkill{
 }
 
 
---鬼医：每个出牌阶段限一次，若你正面向上，你可以弃一黑色手张牌，令一名角色减1点体力上限（最多减至1点），或弃一张红色手张牌，令一名角色增加1点体力上限。然后失去1点体力。
 guiyiBlackCard = sgs.CreateSkillCard{
 	name = "guiyiBlackCard",
 	target_fixed = false,
 	will_throw = true,
 	filter = function(self, targets, to_select)
-		return #targets==0 and to_select:getMaxHp()>1 --and sgs.Self:distanceTo(to_select)<=2
+        return #targets == 0
 	end,
 	
 	on_use = function(self, room, source, targets)
-		local dest=targets[1]
-		room:loseMaxHp(dest,1)
-		-- room:loseHp(source,1)
-		room:drawCards(dest,1)
-		--if source:faceUp() then source:turnOver() end
-		room:setPlayerFlag (source,"guiyi_used")
+        local dest = targets[1]
+        if dest:getMaxHp() > 1 then
+            room:loseMaxHp(dest, 1)
+        end
+        room:drawCards(dest, 1)
+        room:setPlayerFlag(source, "guiyi_used")
 	end
 }
 
@@ -584,7 +583,7 @@ guiyiRedCard = sgs.CreateSkillCard{
 	target_fixed = false,
 	will_throw = true,
 	filter = function(self, targets, to_select)
-		return #targets==0 and sgs.Self:distanceTo(to_select)<=2 --and to_select:inMyAttackRange(sgs.Self)
+        return #targets == 0
 	end,
 	
 	on_use = function(self, room, source, targets)
@@ -782,7 +781,7 @@ sgs.LoadTranslationTable{
 	[":gangbi"]="当你成为【乐不思蜀】或【顺手牵羊】的目标后，你可以对使用者造成3点雷电伤害。",
 	
 	["guiyi"]="鬼医",
-	[":guiyi"]="每个出牌阶段限一次，你可以弃一黑色手张牌，令一名角色减1点体力上限（最多减至1点）并摸一张牌，或弃一张红色手张牌，令一名角色增加1点体力上限。然后你失去1点体力。",
+	[":guiyi"]="每个出牌阶段限一次，你可以弃一黑色手张牌，令一名角色减1点体力上限（最多减至1点）并摸一张牌，或弃一张红色手张牌，令一名角色增加1点体力上限。",
 	
 	["hunchu"]="魂触",
 	[":hunchu"]="阶段技，选择两名体力值不相等的角色，你弃X张牌（X为体力值之差），另该两名角色交换体力值，然后原先体力较多的角色摸2X张牌。",

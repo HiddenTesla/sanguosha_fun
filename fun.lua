@@ -4,7 +4,7 @@ extension = sgs.Package("fun")
 jiangzhongzheng=sgs.General(extension, "jiangzhongzheng","god",4,true,true)
 maorunzhi=sgs.General(extension, "maorunzhi","god",4,true,true)
 sphuanggai=sgs.General(extension, "sphuanggai","wu",10)
-shenhuatuo=sgs.General(extension, "shenhuatuo","god", 4, true, true)
+shenhuatuo=sgs.General(extension, "shenhuatuo","god", 3, true, true)
 spguojia=sgs.General(extension, "spguojia","god", 30, true, true)
 spdongzhuo=sgs.General(extension, "spdongzhuo$","qun", 8)
 anu=sgs.General(extension, "anu","shu", 3, false)
@@ -120,26 +120,50 @@ BTqianxun = sgs.CreateProhibitSkill{
 	end
 }
 
+function isFriend(p1, p2)
+    return getHouse(p1) == getHouse(p2)
+end
+
+function getHouse(player)
+    local role = player:getRole()
+    if role == "lord" or role == "loyalist" then
+        return "lord"
+    elseif role == "renegade" then
+        return "renegade"
+    else
+        return "rebel"
+    end
+end
+
 changsheng=sgs.CreateTriggerSkill{
 	name = "changsheng",
 	frequency = sgs.Skill_Compulsory,
-	events = {sgs.TurnStart},
+	events = {sgs.GameStart, sgs.TurnStart},
 	on_trigger = function (self, event, player, data)
 		local room = player:getRoom()
-		local mhp=sgs.QVariant()
-		local count=player:getMaxHp()
-		local hp=player:getHp()
+        
+        if event == sgs.GameStart then               
+            for _, p in sgs.qlist(room:getOtherPlayers(player)) do  
+                if isFriend(p, player) and not p:hasSkill(self:objectName()) then
+                    room:attachSkillToPlayer(p, self:objectName())
+                end
+            end
+        elseif event == sgs.TurnStart then
+            local mhp = sgs.QVariant()
+            local count = player:getMaxHp()
+            local hp = player:getHp()
 
-		if (hp==count) then
-			mhp:setValue(count+1)
-			room:setPlayerProperty(player,"maxhp",mhp)
-		else
-			local theRecover=sgs.RecoverStruct()
-			theRecover.recover=1
-			theRecover.who=player
-			room:recover(player,theRecover)
+            player:drawCards(1)
+            if (hp == count) then
+                mhp:setValue(count + 1)
+                room:setPlayerProperty(player, "maxhp", mhp)
+            else
+            local theRecover = sgs.RecoverStruct()
+                theRecover.recover = 1
+                theRecover.who = player
+                room:recover(player, theRecover)
+            end
 		end
-
 	end,
 }
 
@@ -735,7 +759,7 @@ sgs.LoadTranslationTable{
 --	[":taoxian"]="<b>锁定技，</b>你的所有黑桃牌牌均视为桃",
 
 	["changsheng"]="长生",
-	[":changsheng"]="锁定技，回合开始阶段，若你体力值已满，则你增加1点体力上限，否则回复1点体力。",
+	[":changsheng"]="锁定技，回合开始阶段，若你体力值已满，则你增加1点体力上限，否则回复1点体力。与你同一阵营的角色也获得该技能。",
 
 	["xiusheng"]="修生",
 	[":xiusheng"]="锁定技，游戏开始时，你失去29点体力。回合开始阶段，若你的体力值不大于3点，你回复2点体力，否则回复1点体力。",

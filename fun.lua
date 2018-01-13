@@ -138,7 +138,7 @@ end
 changsheng=sgs.CreateTriggerSkill{
 	name = "changsheng",
 	frequency = sgs.Skill_Compulsory,
-	events = {sgs.GameStart, sgs.TurnStart},
+	events = {sgs.GameStart, sgs.TurnStart, sgs.CardEffected},
 	on_trigger = function (self, event, player, data)
 		local room = player:getRoom()
         
@@ -167,6 +167,12 @@ changsheng=sgs.CreateTriggerSkill{
                 theRecover.recover = 1
                 theRecover.who = player
                 room:recover(player, theRecover)
+            end
+        elseif event == sgs.CardEffected then
+            local effect = data:toCardEffect()
+            local card = effect.card
+            if card:isKindOf("SavageAssault") or card:isKindOf("ArcheryAttack") then
+                return true
             end
 		end
 	end,

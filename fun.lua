@@ -144,8 +144,13 @@ changsheng=sgs.CreateTriggerSkill{
         
         if event == sgs.GameStart then               
             for _, p in sgs.qlist(room:getOtherPlayers(player)) do  
-                if isFriend(p, player) and not p:hasSkill(self:objectName()) then
-                    room:attachSkillToPlayer(p, self:objectName())
+                if isFriend(p, player) then
+                    if not p:hasSkill(self:objectName()) then
+                        room:attachSkillToPlayer(p, self:objectName())
+                    end
+                else
+                    room:setPlayerProperty(p, "maxhp", sgs.QVariant(p:getMaxHp() + 2))
+                    room:setPlayerProperty(p, "hp", sgs.QVariant(p:getMaxHp()))
                 end
             end
         elseif event == sgs.TurnStart then

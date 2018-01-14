@@ -600,7 +600,7 @@ guiyiBlackCard = sgs.CreateSkillCard{
 	target_fixed = false,
 	will_throw = true,
 	filter = function(self, targets, to_select)
-        return #targets == 0
+        return #targets == 0 and not to_select:hasFlag("guiyi_black")
 	end,
 	
 	on_use = function(self, room, source, targets)
@@ -609,7 +609,7 @@ guiyiBlackCard = sgs.CreateSkillCard{
             room:loseMaxHp(dest, 1)
         end
         room:drawCards(dest, 1)
-        room:setPlayerFlag(source, "guiyi_used")
+        room:setPlayerFlag(dest, "guiyi_black")
 	end
 }
 
@@ -618,18 +618,16 @@ guiyiRedCard = sgs.CreateSkillCard{
 	target_fixed = false,
 	will_throw = true,
 	filter = function(self, targets, to_select)
-        return #targets == 0
+        return #targets == 0 and not to_select:hasFlag("guiyi_red")
 	end,
 	
-	on_use = function(self, room, source, targets)
-		local dest=targets[1]
-		local mhp=sgs.QVariant()
-		mhp:setValue(dest:getMaxHp()+1)
-		room:setPlayerProperty(dest,"maxhp",mhp)
-		--room:loseMaxHp(dest,-1)		
-		-- room:loseHp(source,1)
-		room:setPlayerFlag (source,"guiyi_used")
-	end
+    on_use = function(self, room, source, targets)
+        local dest = targets[1]
+        local mhp = sgs.QVariant()
+        mhp:setValue(dest:getMaxHp() + 1)
+        room:setPlayerProperty(dest, "maxhp", mhp)
+        room:setPlayerFlag(dest, "guiyi_red")
+    end
 }
 
 guiyi = sgs.CreateViewAsSkill{
@@ -652,7 +650,7 @@ guiyi = sgs.CreateViewAsSkill{
 		end
 	end, 
 	enabled_at_play = function(self, player)
-		return not player:hasFlag ("guiyi_used")
+		return true
 	end, 
 
 }
@@ -816,7 +814,7 @@ sgs.LoadTranslationTable{
 	[":gangbi"]="当你成为【乐不思蜀】或【顺手牵羊】的目标后，你可以对使用者造成3点雷电伤害。",
 	
 	["guiyi"]="鬼医",
-	[":guiyi"]="每个出牌阶段限一次，你可以弃一黑色手张牌，令一名角色减1点体力上限（最多减至1点）并摸一张牌，或弃一张红色手张牌，令一名角色增加1点体力上限。",
+	[":guiyi"]="出牌阶段，你可以弃一黑色手张牌，令一名角色减1点体力上限（最多减至1点）并摸一张牌，或弃一张红色手张牌，令一名角色增加1点体力上限。每个出牌阶段中红黑对同一名角色各至多使用一次。",
 	
 	["hunchu"]="魂触",
 	[":hunchu"]="阶段技，选择两名体力值不相等的角色，你弃X张牌（X为体力值之差），另该两名角色交换体力值，然后原先体力较多的角色摸2X张牌。",

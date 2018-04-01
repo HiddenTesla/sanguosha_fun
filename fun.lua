@@ -661,6 +661,41 @@ guiyi = sgs.CreateViewAsSkill{
 
 }
 
+kirin_dis_mod = sgs.CreateTargetModSkill {
+    name = "#kirin_dis_mod",
+    frequency = sgs.Skill_Compulsory,
+    pattern = "Slash",
+    residue_func = function(self, player)
+        return 0
+    end,
+
+    distance_limit_func = function(self, player)
+        if player:hasSkill(self:objectName()) then
+            return 1000
+        end
+	end,
+
+}
+
+kirin = sgs.CreateTriggerSkill {
+    name = "kirin",
+    frequency = sgs.Skill_NotFrequent,
+    events = {sgs.DamageCaused},
+    on_trigger = function(self, event, player, data)
+        local damage = data:toDamage()
+        local card = damage.card
+        local isSlash = (card and card:isKindOf("Slash") and (not damage.chain) and (not damage.transer))
+        if not isSlash then return false end
+        local room = player:getRoom()
+        local to = damage.to
+        if not to:hasEquip() then return false end
+        if not room:askForSkillInvoke(player, self:objectName(), data) then return false end
+        local id = room:askForCardChosen(player, to, "e", self:objectName())
+        room:throwCard(id, to, player)
+    end
+}
+
+
 --触摸：阶段技，阶段技，选择两名体力值不相等的角色，你弃X张牌（X为体力值之差），另该两名角色交换体力值，然后原先体力较多的角色摸2X张牌。
 hunchuCard= sgs.CreateSkillCard{
 	name = "hunchuCard",
@@ -730,6 +765,7 @@ sphuanggai:addSkill ("kuanggu")
 shenhuatuo:addSkill (changsheng) --当前文件里有的技能名不要带引号！
 shenhuatuo:addSkill ("yingzi")
 shenhuatuo:addSkill (guiyi)
+shenhuatuo:addSkill(kirin)
 
 spguojia:addSkill ("tiandu")
 spguojia:addSkill ("nosyiji")
@@ -824,4 +860,7 @@ sgs.LoadTranslationTable{
 	
 	["hunchu"]="魂触",
 	[":hunchu"]="阶段技，选择两名体力值不相等的角色，你弃X张牌（X为体力值之差），另该两名角色交换体力值，然后原先体力较多的角色摸2X张牌。",
+
+    ["kirin"] = "麒麟",
+    [":kirin"] = "当你使用【杀】对目标角色造成伤害时，你可以弃掉其一张装备区的牌。",
 }

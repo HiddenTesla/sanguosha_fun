@@ -611,10 +611,15 @@ guiyiBlackCard = sgs.CreateSkillCard{
 	
 	on_use = function(self, room, source, targets)
         local dest = targets[1]
-        if dest:getMaxHp() > 1 then
-            room:loseMaxHp(dest, 1)
+        if dest:getMaxHp() <= 1 then
+            return false
         end
-        room:drawCards(dest, 1)
+        local drawCount = 1
+        if not dest:isWounded() then
+            drawCount = 2
+        end
+        room:loseMaxHp(dest, 1)
+        room:drawCards(dest, drawCount)
         room:setPlayerFlag(dest, "guiyi_black")
 	end
 }

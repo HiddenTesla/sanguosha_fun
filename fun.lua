@@ -1,3 +1,9 @@
+-- 本文件最初创作于2015年3月，2016年11月托管于github。
+-- 初创时作者还不是专业码农，不懂版本控制，因此有一些注释掉的代码。
+-- 由于历史原因，本文件的风格较混乱：空格与制表符混用，CRLF与LF混用。
+-- 2018年4月起新增代码将统一使用空格与LF。
+-- 以上注释写于2018-04-06。
+
 module("extensions.fun", package.seeall)
 extension = sgs.Package("fun")
 
@@ -8,6 +14,8 @@ shenhuatuo=sgs.General(extension, "shenhuatuo","god", 3, true, true)
 spguojia=sgs.General(extension, "spguojia","god", 30, true, true)
 spdongzhuo=sgs.General(extension, "spdongzhuo$","qun", 8)
 anu=sgs.General(extension, "anu","shu", 3, false)
+
+
 
 
 dawujia=sgs.CreateTriggerSkill{
@@ -143,14 +151,29 @@ changsheng=sgs.CreateTriggerSkill{
 		local room = player:getRoom()
         
         if event == sgs.GameStart then               
-            for _, p in sgs.qlist(room:getOtherPlayers(player)) do  
-                if isFriend(p, player) then
-                    if not p:hasSkill(self:objectName()) then
-                        room:attachSkillToPlayer(p, self:objectName())
+            for _, current in sgs.qlist(room:getOtherPlayers(player)) do
+                local skillName = self:objectName()
+                if isFriend(current, player) then
+                    if not current:hasSkill(skillName) then
+                        room:attachSkillToPlayer(current, skillName)
                     end
                 else
-                    room:setPlayerProperty(p, "maxhp", sgs.QVariant(p:getMaxHp() + 2))
-                    room:setPlayerProperty(p, "hp", sgs.QVariant(p:getMaxHp()))
+                    local key = current:objectName() .. "_changsheng"
+                    local currentTag = room:getTag(key)
+                    if currentTag == nil or currentTag:toInt() <= 0 then
+                        room:setTag(key, sgs.QVariant(1))
+                        local friends = 1
+                        for _, ppp in sgs.qlist(room:getOtherPlayers(current)) do
+                            if isFriend(ppp, current) then
+                                friends = friends + 1
+                            end
+                        end
+                        room:setPlayerProperty(current, "maxhp", sgs.QVariant(current:getMaxHp() + 2 * friends))
+                        room:setPlayerProperty(current, "hp", sgs.QVariant(current:getMaxHp()))
+                    else
+                       local value = currentTag:toInt()
+                       room:setTag(key, sgs.QVariant(value + 1))
+                    end
                 end
             end
         elseif event == sgs.TurnStart then

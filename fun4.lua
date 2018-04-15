@@ -292,7 +292,7 @@ xianji = sgs.CreateViewAsSkill{
 	end, 
 }
 
-daoshuCard = sgs.CreateSkillCard{
+daoshuCard = sgs.CreateSkillCard {
 	name = "daoshuCard", 
 	target_fixed = false,
 	will_throw = true,
@@ -304,17 +304,48 @@ daoshuCard = sgs.CreateSkillCard{
 		local room = effect.to:getRoom()
 		local me = effect.from
 		local you = effect.to
+        local judge = sgs.JudgeStruct()
+        judge.who = me
+        judge.good = true
+        judge.reason = self:objectName()
+        room:judge(judge)
+
+        local judgeCard = judge.card
+
 		local card_id = room:askForCardChosen(me, you, "h", self:objectName())
-		local card = sgs.Sanguosha:getCard(card_id)
+		local showCard = sgs.Sanguosha:getCard(card_id)
 		room:showCard(you, card_id)
-		local suit = card:getSuit()
-		if suit == sgs.Card_Diamond then
-			room:loseHp(me, 1)
+
+		local suit = showCard:getSuit()
+        if suit == judgeCard:getSuit() then
 			room:setPlayerFlag(me, "daoshuFlag")
-		else
-			me:obtainCard(card)
-		end
-		
+            local toThrow = nil
+            if not me:isKongcheng() then
+                local suitString = nil;
+                -- XXX: 是否有办法可以直接把Suit enum转换为string？
+                if suit == sgs.Card_Spade then
+                    suitString = "spade"
+                elseif suit == sgs.Card_Heart then
+                    suitString = "heart"
+                elseif suit == sgs.Card_Club then
+                    suitString = "club"
+                elseif suit == sgs.Card_Diamond then
+                    suitString = "diamond"
+                else
+                    suitString = "diamond"
+                end
+                local pattern = ".|" .. suitString .. "|.|hand"
+                toThrow = room:askForCard(me, pattern, "@daoshu-throw")
+            end
+            if toThrow then
+                room:throwCard(toThrow, me)
+            else
+                room:loseHp(me, 1)
+            end
+            room:throwCard(showCard, you)
+        else
+            me:obtainCard(showCard)
+        end
 	end
 }
 
@@ -365,5 +396,7 @@ sgs.LoadTranslationTable {
 	["touxi"]="偷袭",
 	[":touxi"]="出牌阶段，你可以弃一张牌，视为对任意一名角色使用了【杀】。",
 	["daoshu"]="盗书",
-	[":daoshu"]="出牌阶段，你可以展示一名其他角色的一张手牌。若该牌为方块，你失去一点体力且此回合不能再使用该技能；否则你获得该牌。",
+	[":daoshu"]="出牌阶段，你可以进行一次判定然后展示一名其他角色的一张手牌。若此牌与判定牌花色相同，弃置此牌，此回合不能再使用该技能，然后你选择：弃一张与此牌花色相同的手牌，或失去1点体力；否则你获得此牌。",
+
+    ["@daoshu-throw"] = "弃掉一张与判定牌花色相同的手牌，否则你失去1点体力",
 }

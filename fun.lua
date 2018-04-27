@@ -195,6 +195,11 @@ changsheng=sgs.CreateTriggerSkill{
             local effect = data:toCardEffect()
             local card = effect.card
             if card:isKindOf("SavageAssault") or card:isKindOf("ArcheryAttack") then
+                local recover = sgs.RecoverStruct()
+                recover.who = effect.from
+                recover.recover = 1
+                recover.card = card
+                room:recover(player, recover)
                 return true
             end
         elseif event == sgs.Damaged then

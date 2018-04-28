@@ -168,7 +168,7 @@ changsheng=sgs.CreateTriggerSkill{
                                 friends = friends + 1
                             end
                         end
-                        room:setPlayerProperty(current, "maxhp", sgs.QVariant(current:getMaxHp() + 2 * friends))
+                        room:setPlayerProperty(current, "maxhp", sgs.QVariant(current:getMaxHp() + 3 * friends))
                         room:setPlayerProperty(current, "hp", sgs.QVariant(current:getMaxHp()))
                     else
                        local value = currentTag:toInt()
@@ -183,8 +183,15 @@ changsheng=sgs.CreateTriggerSkill{
 
             player:drawCards(1)
             if (hp == count) then
+                mhp:setValue(count + 2)
+                room:setPlayerProperty(player, "maxhp", mhp)
+            elseif hp == count -1 then
                 mhp:setValue(count + 1)
                 room:setPlayerProperty(player, "maxhp", mhp)
+                local theRecover = sgs.RecoverStruct()
+                theRecover.recover = 1
+                theRecover.who = player
+                room:recover(player, theRecover)
             else
                 local theRecover = sgs.RecoverStruct()
                 theRecover.recover = 1
@@ -195,6 +202,11 @@ changsheng=sgs.CreateTriggerSkill{
             local effect = data:toCardEffect()
             local card = effect.card
             if card:isKindOf("SavageAssault") or card:isKindOf("ArcheryAttack") then
+                local recover = sgs.RecoverStruct()
+                recover.who = effect.from
+                recover.recover = 1
+                recover.card = card
+                room:recover(player, recover)
                 return true
             end
         elseif event == sgs.Damaged then

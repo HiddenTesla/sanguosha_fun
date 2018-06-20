@@ -54,11 +54,8 @@ shared.fuyin = sgs.CreateTriggerSkill {
     on_trigger = function(self, event, player, data)
         local room = player:getRoom()
         for _, target in sgs.qlist(room:getOtherPlayers(player)) do
-            if target:getRole() == "renegade" then
-                print("dss")
-                room:acquireSkill(target, "shared_fuyin_renegade", true)
-                print(target:objectName() .. " acquires")
-            end
+            room:attachSkillToPlayer(target, "shared_fuyin_renegade")
+            print("Attached")
         end
     end
 }
@@ -66,7 +63,8 @@ shared.fuyin = sgs.CreateTriggerSkill {
 sgs.LoadTranslationTable {
     ["shared_fuyin"] = "福音",
     [":shared_fuyin"] = "<b>锁定技，</b>每当一名角色死亡时，若此时存活的忠臣数不少于反贼数，则内奸立即死亡。即使你已死亡，该触发依然生效。",
-    ["shared_fuyin_renegade"] = "hidden",
+    ["shared_fuyin_renegade"] = "福兵",
+    [":shared_fuyin_renegade"] = "<b>锁定技，</b>每当一名角色死亡时，若此时存活的忠臣数不少于反贼数，则内奸立即死亡。",
 }
 
 return shared

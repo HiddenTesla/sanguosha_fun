@@ -820,7 +820,6 @@ spdongzhuo:addSkill ("baonue")
 anu:addSkill(lanman)
 anu:addSkill("bossmanjia")
 anu:addSkill(shared.fuyin)
-anu:addSkill(shared.fuyin_renegade)
 
 
 maorunzhi:addSkill(bucai)

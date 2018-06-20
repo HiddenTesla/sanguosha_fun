@@ -24,7 +24,6 @@ shared.fuyin_renegade = sgs.CreateTriggerSkill {
     frequency = sgs.Skill_Compulsory,
     events = {sgs.Death},
     on_trigger = function(self, event, player, data)
-        print(player:objectName())
         if player:getRole() ~= "renegade" then
             return false
         end
@@ -36,12 +35,11 @@ shared.fuyin_renegade = sgs.CreateTriggerSkill {
            if role == "loyalist" then
                 nLoyalist = nLoyalist + 1
            elseif role == "rebel" then
-                nReble = nRebel + 1
+                nRebel = nRebel + 1
            end
-           print(nLoyalist, nRebel)
-           if nLoyalist >= nRebel then
-               room:killPlayer(player)
-           end
+        end
+        if nLoyalist >= nRebel then
+            room:killPlayer(player)
         end
     end,
     can_trigger = function(self, target)

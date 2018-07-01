@@ -1,6 +1,3 @@
---module("extensions.shared", package.seeall)
--- extension = sgs.Package("shared")
-
 shared = {}
 shared.hidden = true
 
@@ -19,54 +16,57 @@ function shared:isFriend(p1, p2)
     return getHouse(p1) == getHouse(p2) 
 end
 
-shared.fuyin_renegade = sgs.CreateTriggerSkill {
-    name = "shared_fuyin_renegade",
-    frequency = sgs.Skill_Compulsory,
-    events = {sgs.Death},
-    on_trigger = function(self, event, player, data)
-        if player:getRole() ~= "renegade" then
-            return false
+function shared:killAllRenegades(room)
+    for _, alive in sgs.qlist(room:getAlivePlayers()) do
+        local role = alive:getRole() 
+        if role == "renegade" then
+            room:killPlayer(alive)
         end
-        local room = player:getRoom()
-        local nLoyalist = 0
-        local nRebel = 0
-        for _, alive in sgs.qlist(room:getAlivePlayers()) do
-           local role = alive:getRole() 
-           if role == "loyalist" then
-                nLoyalist = nLoyalist + 1
-           elseif role == "rebel" then
-                nRebel = nRebel + 1
-           end
-        end
-        if nLoyalist >= nRebel then
-            room:killPlayer(player)
-        end
-    end,
-    can_trigger = function(self, target)
-        return target
     end
-}
+end
 
 shared.fuyin = sgs.CreateTriggerSkill {
     name = "shared_fuyin",
     frequency = sgs.Skill_Compulsory,
-    events = {sgs.GameStart},
+    events = {sgs.Death},
     on_trigger = function(self, event, player, data)
+        if player:getRole() ~= "rebel" then
+            return false
+        end
         local room = player:getRoom()
-        for _, target in sgs.qlist(room:getOtherPlayers(player)) do
-            if target:getRole() == "renegade" then
-                print("dss")
-                room:acquireSkill(target, "shared_fuyin_renegade", true)
-                print(target:objectName() .. " acquires")
+        local death = data:toDeath()
+        local deadman = death.who
+        if deadman:objectName() == player:objectName() then
+            shared:killAllRenegades(room)
+            return false
+        end
+        if deadman:getRole() ~= "rebel" then
+            return false
+        end
+
+        local nLoyalist = 0
+        local nRebel = 0
+        for _, alive in sgs.qlist(room:getAlivePlayers()) do
+            local role = alive:getRole() 
+            if role == "loyalist" then
+                    nLoyalist = nLoyalist + 1
+            elseif role == "rebel" then
+                    nRebel = nRebel + 1
             end
         end
+        if nLoyalist >= nRebel then
+            shared:killAllRenegades(room)
+        end
+    end,
+
+    can_trigger = function(self, target)
+        return target:hasSkill(self:objectName())
     end
 }
 
 sgs.LoadTranslationTable {
     ["shared_fuyin"] = "福音",
-    [":shared_fuyin"] = "<b>锁定技，</b>每当一名角色死亡时，若此时存活的忠臣数不少于反贼数，则内奸立即死亡。即使你已死亡，该触发依然生效。",
-    ["shared_fuyin_renegade"] = "hidden",
+    [":shared_fuyin"] = "<b>反贼技，锁定技，</b>每当你或另一名反贼死亡时，若此时存活的忠臣数不少于反贼数，则内奸立即死亡。",
 }
 
 return shared

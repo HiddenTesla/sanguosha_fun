@@ -36,10 +36,7 @@ shared.fuyin = sgs.CreateTriggerSkill {
         local room = player:getRoom()
         local death = data:toDeath()
         local deadman = death.who
-        if deadman:objectName() == player:objectName() then
-            shared:killAllRenegades(room)
-            return false
-        end
+
         if deadman:getRole() ~= "rebel" then
             return false
         end
@@ -54,7 +51,7 @@ shared.fuyin = sgs.CreateTriggerSkill {
                     nRebel = nRebel + 1
             end
         end
-        if nLoyalist >= nRebel then
+        if (nLoyalist >= nRebel or deadman:objectName() == player:objectName()) and nLoyalist > 0 then
             shared:killAllRenegades(room)
         end
     end,

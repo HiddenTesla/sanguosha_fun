@@ -15,7 +15,7 @@ spguojia=sgs.General(extension, "spguojia","god", 30, true, true)
 spdongzhuo=sgs.General(extension, "spdongzhuo$","qun", 8)
 anu=sgs.General(extension, "anu","shu", 3, false)
 
-
+local shared = require("extensions/shared")
 
 
 dawujia=sgs.CreateTriggerSkill{
@@ -153,7 +153,7 @@ changsheng=sgs.CreateTriggerSkill{
         if event == sgs.GameStart then               
             for _, current in sgs.qlist(room:getOtherPlayers(player)) do
                 local skillName = self:objectName()
-                if isFriend(current, player) then
+                if shared:isFriend(current, player) then
                     if not current:hasSkill(skillName) then
                         room:attachSkillToPlayer(current, skillName)
                     end
@@ -819,7 +819,7 @@ spdongzhuo:addSkill ("baonue")
 
 anu:addSkill(lanman)
 anu:addSkill("bossmanjia")
-anu:addSkill(hunchu)
+anu:addSkill(shared.fuyin)
 
 
 maorunzhi:addSkill(bucai)

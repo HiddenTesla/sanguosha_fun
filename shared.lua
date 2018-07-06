@@ -61,9 +61,33 @@ shared.fuyin = sgs.CreateTriggerSkill {
     end
 }
 
+shared.dutao = sgs.CreateTriggerSkill {
+    name = "shared_dutao",
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.CardUsed},
+    on_trigger = function(self, event, player, data)
+        local room = player:getRoom()
+        local use = data:toCardUse()
+        local card = use.card
+
+        if not card:isKindOf("Peach") then
+            return false
+        end
+        
+        for _, target in sgs.qlist(use.to) do
+            room:loseMaxHp(target, 1)
+        end
+        room:killPlayer(player)
+        
+        return true        
+    end,
+}
+
 sgs.LoadTranslationTable {
     ["shared_fuyin"] = "福音",
     [":shared_fuyin"] = "<b>反贼技，锁定技，</b>每当你或另一名反贼死亡时，若此时存活的忠臣数不少于反贼数，则内奸立即死亡。",
+    ["shared_dutao"] = "毒桃",
+    [":shared_dutao"] = "<b>反贼技，锁定技，</b>每当内奸对一名角色使用【桃】时，该【桃】无效，该角色失去1点体力上限且该内奸立即死亡。",
 }
 
 return shared

@@ -6,6 +6,7 @@ BTliubei=sgs.General(extension, "BTliubei$","shu", 5, true)
 BTsunquan=sgs.General(extension, "BTsunquan$","wu", 5, true)
 lingxi=sgs.General(extension, "lingxi","wu", 3, false, true)
 
+local shared = require("extensions/shared")
 
 mashu2 = sgs.CreateDistanceSkill{
     name = "mashu2",
@@ -575,6 +576,7 @@ BTliubei:addSkill("jijiang")
 BTsunquan:addSkill("zhiheng")
 BTsunquan:addSkill("nosyingzi")
 BTsunquan:addSkill("biyue")
+BTsunquan:addSkill(shared.dutao)
 
 lingxi:addSkill(chaoyuan)
 lingxi:addSkill(shenyou)
@@ -615,5 +617,4 @@ sgs.LoadTranslationTable{
     [":wuqi"]="摸牌阶段开始时，你可以放弃摸牌并亮出牌堆顶的五张牌。若如此做，你获得其中每种花色的牌各一张，然后将其余的牌置入弃牌堆。",
     ["chengjie"]="惩戒",
     [":chengjie"]="阶段技，你可以令任意数量的其他角色变身为YJ华雄，然后你失去3点一半体力。",
-        
 }

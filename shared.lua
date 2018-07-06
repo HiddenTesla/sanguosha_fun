@@ -70,7 +70,20 @@ shared.dutao = sgs.CreateTriggerSkill {
         local use = data:toCardUse()
         local card = use.card
 
+        if player:getRole() ~= "renegade" then
+            return false
+        end
         if not card:isKindOf("Peach") then
+            return false
+        end
+
+        local isRebel = false
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            if p:getRole() == "rebel" and p:hasSkill(self:objectName()) then
+                isRebel = true
+            end
+        end
+        if not isRebel then 
             return false
         end
         
@@ -81,6 +94,10 @@ shared.dutao = sgs.CreateTriggerSkill {
         
         return true        
     end,
+
+    can_trigger = function(self, target)
+        return target:isAlive()
+    end
 }
 
 sgs.LoadTranslationTable {

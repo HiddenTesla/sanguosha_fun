@@ -6,8 +6,6 @@ BTliubei=sgs.General(extension, "BTliubei$","shu", 5, true)
 BTsunquan=sgs.General(extension, "BTsunquan$","wu", 5, true)
 lingxi=sgs.General(extension, "lingxi","wu", 3, false, true)
 
-local shared = require("extensions/shared")
-
 mashu2 = sgs.CreateDistanceSkill{
     name = "mashu2",
     correct_func = function(self, from, to)
@@ -562,9 +560,44 @@ chengjie = sgs.CreateViewAsSkill{
     end, 
 }
 
+dutao = sgs.CreateTriggerSkill {
+    name = "dutao",
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.CardUsed},
+    on_trigger = function(self, event, player, data)
+        local room = player:getRoom()
+        local use = data:toCardUse()
+        local card = use.card
 
+        if player:getRole() ~= "renegade" then
+            return false
+        end
+        if not card:isKindOf("Peach") then
+            return false
+        end
 
+        local isRebel = false
+        for _, p in sgs.qlist(room:getAlivePlayers()) do
+            if p:getRole() == "rebel" and p:hasSkill(self:objectName()) then
+                isRebel = true
+            end
+        end
+        if not isRebel then 
+            return false
+        end
+        
+        for _, target in sgs.qlist(use.to) do
+            room:loseMaxHp(target, 1)
+        end
+        room:killPlayer(player)
+        
+        return true        
+    end,
 
+    can_trigger = function(self, target)
+        return target:isAlive()
+    end
+}
 
 guaitai:addSkill(heixin)
 --guaitai:addSkill(yongyi)
@@ -576,7 +609,7 @@ BTliubei:addSkill("jijiang")
 BTsunquan:addSkill("zhiheng")
 BTsunquan:addSkill("nosyingzi")
 BTsunquan:addSkill("biyue")
-BTsunquan:addSkill(shared.dutao)
+BTsunquan:addSkill(dutao)
 
 lingxi:addSkill(chaoyuan)
 lingxi:addSkill(shenyou)
@@ -616,5 +649,7 @@ sgs.LoadTranslationTable{
     ["wuqi"]="五气",
     [":wuqi"]="摸牌阶段开始时，你可以放弃摸牌并亮出牌堆顶的五张牌。若如此做，你获得其中每种花色的牌各一张，然后将其余的牌置入弃牌堆。",
     ["chengjie"]="惩戒",
-    [":chengjie"]="阶段技，你可以令任意数量的其他角色变身为YJ华雄，然后你失去3点一半体力。",
+    [":chengjie"]="阶段技，你可以令任意数量的其他角o色变身为YJ华雄，然后你失去3点一半体力。",
+    ["dutao"] = "毒桃",
+    [":dutao"] = "<b>反贼技，锁定技，</b>每当内奸对一名角色使用【桃】时，该【桃】无效，该角色失去1点体力上限且该内奸立即死亡。",
 }

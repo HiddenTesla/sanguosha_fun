@@ -599,6 +599,34 @@ dutao = sgs.CreateTriggerSkill {
     end
 }
 
+guzong_extra = sgs.CreateMaxCardsSkill {
+    name = "#guzong_extra",
+    extra_func = function(self, target)
+        local extra = target:getMark("@guzong")
+        return extra
+    end
+}
+
+guzong = sgs.CreateTriggerSkill {
+    name = "guzong",
+    events = {sgs.CardsMoveOneTime},
+    frequency = sgs.Skill_Compulsory,
+    on_trigger = function(self, event, player, data)
+        local room = player:getRoom()
+        if event == sgs.CardsMoveOneTime then
+            local move = data:toMoveOneTime()
+            if player:getPhase() == sgs.Player_Discard and
+                move.from and 
+                move.from:objectName() == player:objectName() and 
+                move.card_ids:length() >= 2 and
+                (bit32.band(move.reason.m_reason, sgs.CardMoveReason_S_MASK_BASIC_REASON) == sgs.CardMoveReason_S_REASON_DISCARD)
+            then
+                player:gainMark("@guzong", 1)
+            end
+        end
+    end
+}
+
 guaitai:addSkill(heixin)
 --guaitai:addSkill(yongyi)
 
@@ -609,7 +637,9 @@ BTliubei:addSkill("jijiang")
 BTsunquan:addSkill("zhiheng")
 BTsunquan:addSkill("nosyingzi")
 BTsunquan:addSkill("biyue")
-BTsunquan:addSkill(dutao)
+BTsunquan:addSkill(guzong)
+BTsunquan:addSkill(guzong_extra)
+
 
 lingxi:addSkill(chaoyuan)
 lingxi:addSkill(shenyou)
@@ -652,4 +682,6 @@ sgs.LoadTranslationTable{
     [":chengjie"]="阶段技，你可以令任意数量的其他角o色变身为YJ华雄，然后你失去3点一半体力。",
     ["dutao"] = "毒桃",
     [":dutao"] = "<b>反贼技，锁定技，</b>每当内奸对一名角色使用【桃】时，该【桃】无效，该角色失去1点体力上限且该内奸立即死亡。",
+    ["guzong"] = "故纵",    
+    [":guzong"] = "<b>锁定技，</b>若你于弃牌阶段弃掉的牌不少于2张，你的手牌上限永久+1。", 
 }

@@ -615,13 +615,14 @@ guzong = sgs.CreateTriggerSkill {
         local room = player:getRoom()
         if event == sgs.CardsMoveOneTime then
             local move = data:toMoveOneTime()
+            local discarded = move.card_ids:length()
             if player:getPhase() == sgs.Player_Discard and
                 move.from and 
                 move.from:objectName() == player:objectName() and 
-                move.card_ids:length() >= 2 and
+                discarded >= 2 and
                 (bit32.band(move.reason.m_reason, sgs.CardMoveReason_S_MASK_BASIC_REASON) == sgs.CardMoveReason_S_REASON_DISCARD)
             then
-                player:gainMark("@guzong", 1)
+                player:gainMark("@guzong", discarded / 2)
             end
         elseif event == sgs.DrawNCards then
             local extra = player:getMark("@guzong")
@@ -689,5 +690,5 @@ sgs.LoadTranslationTable{
     ["dutao"] = "毒桃",
     [":dutao"] = "<b>反贼技，锁定技，</b>每当内奸对一名角色使用【桃】时，该【桃】无效，该角色失去1点体力上限且该内奸立即死亡。",
     ["guzong"] = "故纵",    
-    [":guzong"] = "<b>锁定技，</b>若你于弃牌阶段弃掉的牌不少于2张，你获得1个故纵标记。摸牌阶段，你额外摸X张牌，你的手牌上限+X （X为故纵标记的数量）。", 
+    [":guzong"] = "<b>锁定技，</b>你于弃牌阶段每弃掉2张牌，你获得1个故纵标记。摸牌阶段，你额外摸X张牌，你的手牌上限+X （X为故纵标记的数量）。", 
 }

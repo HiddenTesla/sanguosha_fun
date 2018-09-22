@@ -607,6 +607,16 @@ guzong_extra = sgs.CreateMaxCardsSkill {
     end
 }
 
+guzong_residue = sgs.CreateTargetModSkill {
+    name = "#guzong_residue",
+    frequency = sgs.Skill_NotFrequent,
+    pattern = "Slash",
+    residue_func = function(self, player)
+        local extra = player:getMark("@guzong")
+        return extra
+    end
+}
+
 guzong = sgs.CreateTriggerSkill {
     name = "guzong",
     events = {sgs.CardsMoveOneTime, sgs.DrawNCards},
@@ -646,6 +656,7 @@ BTsunquan:addSkill("nosyingzi")
 BTsunquan:addSkill("biyue")
 BTsunquan:addSkill(guzong)
 BTsunquan:addSkill(guzong_extra)
+BTsunquan:addSkill(guzong_residue)
 
 
 lingxi:addSkill(chaoyuan)
@@ -690,5 +701,5 @@ sgs.LoadTranslationTable{
     ["dutao"] = "毒桃",
     [":dutao"] = "<b>反贼技，锁定技，</b>每当内奸对一名角色使用【桃】时，该【桃】无效，该角色失去1点体力上限且该内奸立即死亡。",
     ["guzong"] = "故纵",    
-    [":guzong"] = "<b>锁定技，</b>你于弃牌阶段每弃掉2张牌，你获得1个故纵标记。摸牌阶段，你额外摸X张牌，你的手牌上限+X （X为故纵标记的数量）。", 
+    [":guzong"] = "<b>锁定技，</b>你于弃牌阶段每弃掉2张牌，你获得1个故纵标记。摸牌阶段，你额外摸X张牌，你的手牌上限+X。出牌阶段你可以额外使用X张【杀】（X为故纵标记的数量）。", 
 }

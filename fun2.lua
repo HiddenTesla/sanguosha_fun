@@ -3,7 +3,7 @@ extension = sgs.Package("fun2")
 
 guaitai=sgs.General(extension, "guaitai$","shu", 5, false,true)
 BTliubei=sgs.General(extension, "BTliubei$","shu", 5, true)
-BTsunquan=sgs.General(extension, "BTsunquan$","wu", 5, true)
+BTsunquan=sgs.General(extension, "BTsunquan$","wu", 3, true)
 lingxi=sgs.General(extension, "lingxi","wu", 3, false, true)
 
 mashu2 = sgs.CreateDistanceSkill{
@@ -607,21 +607,38 @@ guzong_extra = sgs.CreateMaxCardsSkill {
     end
 }
 
+guzong_residue = sgs.CreateTargetModSkill {
+    name = "#guzong_residue",
+    frequency = sgs.Skill_NotFrequent,
+    pattern = "Slash",
+    residue_func = function(self, player)
+        local extra = player:getMark("@guzong")
+        return extra
+    end
+}
+
 guzong = sgs.CreateTriggerSkill {
     name = "guzong",
-    events = {sgs.CardsMoveOneTime},
+    events = {sgs.CardsMoveOneTime, sgs.DrawNCards},
     frequency = sgs.Skill_Compulsory,
     on_trigger = function(self, event, player, data)
         local room = player:getRoom()
         if event == sgs.CardsMoveOneTime then
             local move = data:toMoveOneTime()
+            local discarded = move.card_ids:length()
             if player:getPhase() == sgs.Player_Discard and
                 move.from and 
                 move.from:objectName() == player:objectName() and 
-                move.card_ids:length() >= 2 and
+                discarded >= 2 and
                 (bit32.band(move.reason.m_reason, sgs.CardMoveReason_S_MASK_BASIC_REASON) == sgs.CardMoveReason_S_REASON_DISCARD)
             then
-                player:gainMark("@guzong", 1)
+                player:gainMark("@guzong", discarded / 2)
+            end
+        elseif event == sgs.DrawNCards then
+            local extra = player:getMark("@guzong")
+            if extra > 0 then
+                local count = data:toInt() + extra
+                data:setValue(count)
             end
         end
     end
@@ -639,6 +656,7 @@ BTsunquan:addSkill("nosyingzi")
 BTsunquan:addSkill("biyue")
 BTsunquan:addSkill(guzong)
 BTsunquan:addSkill(guzong_extra)
+BTsunquan:addSkill(guzong_residue)
 
 
 lingxi:addSkill(chaoyuan)
@@ -683,5 +701,5 @@ sgs.LoadTranslationTable{
     ["dutao"] = "毒桃",
     [":dutao"] = "<b>反贼技，锁定技，</b>每当内奸对一名角色使用【桃】时，该【桃】无效，该角色失去1点体力上限且该内奸立即死亡。",
     ["guzong"] = "故纵",    
-    [":guzong"] = "<b>锁定技，</b>若你于弃牌阶段弃掉的牌不少于2张，你的手牌上限永久+1。", 
+    [":guzong"] = "<b>锁定技，</b>你于弃牌阶段每弃掉2张牌，你获得1个故纵标记。摸牌阶段，你额外摸X张牌，你的手牌上限+X。出牌阶段你可以额外使用X张【杀】（X为故纵标记的数量）。", 
 }

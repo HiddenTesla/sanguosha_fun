@@ -603,7 +603,7 @@ guzong_extra = sgs.CreateMaxCardsSkill {
     name = "#guzong_extra",
     extra_func = function(self, target)
         local extra = target:getMark("@guzong") / 3
-        return extra
+        return math.floor(extra)
     end
 }
 
@@ -613,7 +613,7 @@ guzong_residue = sgs.CreateTargetModSkill {
     pattern = "Slash",
     residue_func = function(self, player)
         local extra = player:getMark("@guzong") / 3
-        return extra
+        return math.floor(extra)
     end
 }
 
@@ -634,7 +634,7 @@ guzong = sgs.CreateTriggerSkill {
                 player:gainMark("@guzong", discarded)
             end
         elseif event == sgs.DrawNCards then
-            local extra = player:getMark("@guzong") / 3
+            local extra = math.floor(player:getMark("@guzong") / 3)
             if extra > 0 then
                 local count = data:toInt() + extra
                 data:setValue(count)

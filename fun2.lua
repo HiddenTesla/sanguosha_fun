@@ -634,11 +634,9 @@ guzong = sgs.CreateTriggerSkill {
                 player:gainMark("@guzong", discarded)
             end
         elseif event == sgs.DrawNCards then
-            local extra = math.floor(player:getMark("@guzong") / 3)
-            if extra > 0 then
-                local count = data:toInt() + extra
-                data:setValue(count)
-            end
+            local extra = 1 + math.floor(player:getMark("@guzong") / 3)
+            local count = data:toInt() + extra
+            data:setValue(count)
         end
     end
 }
@@ -647,13 +645,21 @@ luoxiu = sgs.CreatePhaseChangeSkill {
     name = "luoxiu",
     on_phasechange = function(self, player)
         local room = player:getRoom()
-        for _, jcard in sgs.qlist(player:getJudgingArea()) do
-            room:obtainCard(player, jcard)
+        local phase = player:getPhase()
+        if phase == sgs.Player_Start then
+            for _, jcard in sgs.qlist(player:getJudgingArea()) do
+                room:obtainCard(player, jcard)
+            end
+        elseif phase == sgs.Player_Finish then
+            player:drawCards(1)
         end
     end,
 
     can_trigger = function(self, target)
-        return target and target:isAlive() and target:hasSkill(self:objectName()) and target:getPhase() == sgs.Player_Start
+        return target and 
+            target:isAlive() and 
+            target:hasSkill(self:objectName()) and 
+           (target:getPhase() == sgs.Player_Start or target:getPhase() == sgs.Player_Finish)
     end
 }
 
@@ -665,8 +671,6 @@ BTliubei:addSkill("yingzi")
 BTliubei:addSkill("jijiang")
 
 BTsunquan:addSkill("zhiheng")
-BTsunquan:addSkill("nosyingzi")
-BTsunquan:addSkill("biyue")
 BTsunquan:addSkill(guzong)
 BTsunquan:addSkill(guzong_extra)
 BTsunquan:addSkill(guzong_residue)

@@ -670,11 +670,11 @@ BTliubei:addSkill("nosrende")
 BTliubei:addSkill("yingzi")
 BTliubei:addSkill("jijiang")
 
-BTsunquan:addSkill("zhiheng")
 BTsunquan:addSkill(guzong)
 BTsunquan:addSkill(guzong_extra)
 BTsunquan:addSkill(guzong_residue)
 BTsunquan:addSkill(luoxiu)
+BTsunquan:addSkill("zhiheng")
 
 
 lingxi:addSkill(chaoyuan)

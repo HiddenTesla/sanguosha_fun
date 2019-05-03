@@ -643,6 +643,20 @@ guzong = sgs.CreateTriggerSkill {
     end
 }
 
+luoxiu = sgs.CreatePhaseChangeSkill {
+    name = "luoxiu",
+    on_phasechange = function(self, player)
+        local room = player:getRoom()
+        for _, jcard in sgs.qlist(player:getJudgingArea()) do
+            room:obtainCard(player, jcard)
+        end
+    end,
+
+    can_trigger = function(self, target)
+        return target and target:isAlive() and target:hasSkill(self:objectName()) and target:getPhase() == sgs.Player_Start
+    end
+}
+
 guaitai:addSkill(heixin)
 --guaitai:addSkill(yongyi)
 
@@ -656,6 +670,7 @@ BTsunquan:addSkill("biyue")
 BTsunquan:addSkill(guzong)
 BTsunquan:addSkill(guzong_extra)
 BTsunquan:addSkill(guzong_residue)
+BTsunquan:addSkill(luoxiu)
 
 
 lingxi:addSkill(chaoyuan)
@@ -701,4 +716,6 @@ sgs.LoadTranslationTable{
     [":dutao"] = "<b>反贼技，锁定技，</b>每当内奸对一名角色使用【桃】时，该【桃】无效，该角色失去1点体力上限且该内奸立即死亡。",
     ["guzong"] = "故纵",    
     [":guzong"] = "<b>锁定技，</b>你于弃牌阶段每弃掉一张牌，你获得1个故纵标记。摸牌阶段，你额外摸X/3张牌，你的手牌上限+X/3。出牌阶段你可以额外使用X/3张【杀】（向下取整；X为故纵标记的数量）。", 
+    ["luoxiu"] = "罗修",
+    [":luoxiu"] = "<b>锁定技，</b>准备阶段开始时，你获得判定区内所有牌。", 
 }

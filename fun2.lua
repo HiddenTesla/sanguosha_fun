@@ -634,12 +634,32 @@ guzong = sgs.CreateTriggerSkill {
                 player:gainMark("@guzong", discarded)
             end
         elseif event == sgs.DrawNCards then
-            local extra = math.floor(player:getMark("@guzong") / 3)
-            if extra > 0 then
-                local count = data:toInt() + extra
-                data:setValue(count)
-            end
+            local extra = 1 + math.floor(player:getMark("@guzong") / 3)
+            local count = data:toInt() + extra
+            data:setValue(count)
         end
+    end
+}
+
+luoxiu = sgs.CreatePhaseChangeSkill {
+    name = "luoxiu",
+    on_phasechange = function(self, player)
+        local room = player:getRoom()
+        local phase = player:getPhase()
+        if phase == sgs.Player_Start then
+            for _, jcard in sgs.qlist(player:getJudgingArea()) do
+                room:obtainCard(player, jcard)
+            end
+        elseif phase == sgs.Player_Finish then
+            player:drawCards(1)
+        end
+    end,
+
+    can_trigger = function(self, target)
+        return target and 
+            target:isAlive() and 
+            target:hasSkill(self:objectName()) and 
+           (target:getPhase() == sgs.Player_Start or target:getPhase() == sgs.Player_Finish)
     end
 }
 
@@ -650,12 +670,11 @@ BTliubei:addSkill("nosrende")
 BTliubei:addSkill("yingzi")
 BTliubei:addSkill("jijiang")
 
-BTsunquan:addSkill("zhiheng")
-BTsunquan:addSkill("nosyingzi")
-BTsunquan:addSkill("biyue")
 BTsunquan:addSkill(guzong)
 BTsunquan:addSkill(guzong_extra)
 BTsunquan:addSkill(guzong_residue)
+BTsunquan:addSkill(luoxiu)
+BTsunquan:addSkill("zhiheng")
 
 
 lingxi:addSkill(chaoyuan)
@@ -701,4 +720,6 @@ sgs.LoadTranslationTable{
     [":dutao"] = "<b>反贼技，锁定技，</b>每当内奸对一名角色使用【桃】时，该【桃】无效，该角色失去1点体力上限且该内奸立即死亡。",
     ["guzong"] = "故纵",    
     [":guzong"] = "<b>锁定技，</b>你于弃牌阶段每弃掉一张牌，你获得1个故纵标记。摸牌阶段，你额外摸X/3张牌，你的手牌上限+X/3。出牌阶段你可以额外使用X/3张【杀】（向下取整；X为故纵标记的数量）。", 
+    ["luoxiu"] = "罗修",
+    [":luoxiu"] = "<b>锁定技，</b>准备阶段开始时，你获得判定区内所有牌。", 
 }

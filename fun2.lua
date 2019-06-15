@@ -663,6 +663,28 @@ luoxiu = sgs.CreatePhaseChangeSkill {
     end
 }
 
+heice = sgs.CreateViewAsSkill {
+    name = "heice",
+    n = 1,
+    view_filter = function(self, selected, to_select)
+        if #selected == 0 then
+            return to_select:getSuit() == sgs.Card_Spade
+        else
+            return false
+        end
+    end,
+    view_as = function(self, cards)
+        if #cards == 1 then
+            local cardA = cards[1]
+            local suit = cardA:getSuit()
+            local aa = sgs.Sanguosha:cloneCard("god_salvation", suit, 0);
+            aa:addSubcard(cardA)
+            aa:setSkillName(self:objectName())
+            return aa
+        end
+    end
+}
+
 guaitai:addSkill(heixin)
 --guaitai:addSkill(yongyi)
 
@@ -675,6 +697,7 @@ BTsunquan:addSkill(guzong_extra)
 BTsunquan:addSkill(guzong_residue)
 BTsunquan:addSkill(luoxiu)
 BTsunquan:addSkill("zhiheng")
+BTsunquan:addSkill(heice)
 
 
 lingxi:addSkill(chaoyuan)

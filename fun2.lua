@@ -663,6 +663,28 @@ luoxiu = sgs.CreatePhaseChangeSkill {
     end
 }
 
+heice = sgs.CreateViewAsSkill {
+    name = "heice",
+    n = 1,
+    view_filter = function(self, selected, to_select)
+        if #selected == 0 then
+            return to_select:getSuit() == sgs.Card_Spade
+        else
+            return false
+        end
+    end,
+    view_as = function(self, cards)
+        if #cards == 1 then
+            local cardA = cards[1]
+            local suit = cardA:getSuit()
+            local aa = sgs.Sanguosha:cloneCard("god_salvation", suit, 0);
+            aa:addSubcard(cardA)
+            aa:setSkillName(self:objectName())
+            return aa
+        end
+    end
+}
+
 guaitai:addSkill(heixin)
 --guaitai:addSkill(yongyi)
 
@@ -675,6 +697,7 @@ BTsunquan:addSkill(guzong_extra)
 BTsunquan:addSkill(guzong_residue)
 BTsunquan:addSkill(luoxiu)
 BTsunquan:addSkill("zhiheng")
+BTsunquan:addSkill(heice)
 
 
 lingxi:addSkill(chaoyuan)
@@ -719,7 +742,9 @@ sgs.LoadTranslationTable{
     ["dutao"] = "毒桃",
     [":dutao"] = "<b>反贼技，锁定技，</b>每当内奸对一名角色使用【桃】时，该【桃】无效，该角色失去1点体力上限且该内奸立即死亡。",
     ["guzong"] = "故纵",    
-    [":guzong"] = "<b>锁定技，</b>你于弃牌阶段每弃掉一张牌，你获得1个故纵标记。摸牌阶段，你额外摸X/3张牌，你的手牌上限+X/3。出牌阶段你可以额外使用X/3张【杀】（向下取整；X为故纵标记的数量）。", 
+    [":guzong"] = "<b>锁定技，</b>你于弃牌阶段每弃掉一张牌，你获得1个故纵标记。摸牌阶段，你额外摸X/3张牌，你的手牌上限+X/3。出牌阶段你可以额外使用X/3张【杀】（向下取整；X为故纵标记的数量）。",
     ["luoxiu"] = "罗修",
     [":luoxiu"] = "<b>锁定技，</b>准备阶段开始时，你获得判定区内所有牌。", 
+    ["heice"] = "黑策",
+    [":heice"] = "出牌阶段，你可以将任意一张黑桃牌当【桃园结义】使用。",
 }

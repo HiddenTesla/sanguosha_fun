@@ -1,0 +1,6 @@
+
+general:BTsunquan role:rebel starter:true draw:2 
+general:zhangliao role:loyalist draw:1 
+general:sunquan role:lord draw:2 
+general:shencaocao role:loyalist 
+general:shenguanyu role:loyalist 

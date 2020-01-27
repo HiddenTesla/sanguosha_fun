@@ -702,7 +702,10 @@ yongzhi = sgs.CreateTriggerSkill {
         local aliveLoyal = false
         local playerList = room:getAlivePlayers()
         for _, p in sgs.qlist(playerList) do
-            if p:getRole() == "loyalist" then
+            if p:getRole() == "loyalist"
+                and not p:hasSkill("guixin")
+                and not p:hasSkill("wuhun")
+            then
                 aliveLoyal = true
                 break
             end

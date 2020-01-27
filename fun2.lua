@@ -643,6 +643,7 @@ guzong = sgs.CreateTriggerSkill {
 
 luoxiu = sgs.CreatePhaseChangeSkill {
     name = "luoxiu",
+    frequency = sgs.Skill_Compulsory,
     on_phasechange = function(self, player)
         local room = player:getRoom()
         local phase = player:getPhase()

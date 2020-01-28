@@ -643,6 +643,7 @@ guzong = sgs.CreateTriggerSkill {
 
 luoxiu = sgs.CreatePhaseChangeSkill {
     name = "luoxiu",
+    frequency = sgs.Skill_Compulsory,
     on_phasechange = function(self, player)
         local room = player:getRoom()
         local phase = player:getPhase()
@@ -685,6 +686,48 @@ heice = sgs.CreateViewAsSkill {
     end
 }
 
+yongzhi = sgs.CreateTriggerSkill {
+    name = "yongzhi",
+    frequency = sgs.Skill_Compulsory,
+    events = {sgs.AskForPeaches},
+
+    on_trigger = function(self, event, player, data)
+        local room = player:getRoom()
+        local dying = data:toDying()
+        local dyer = dying.who
+        local role = dyer:getRole()
+        if role ~= "lord" then
+            return false
+        end
+
+        local aliveLoyal = false
+        local playerList = room:getAlivePlayers()
+        for _, p in sgs.qlist(playerList) do
+            if p:getRole() == "loyalist"
+                and not p:hasSkill("guixin")
+                and not p:hasSkill("wuhun")
+            then
+                aliveLoyal = true
+                break
+            end
+        end
+
+        if not aliveLoyal then
+            return false
+        end
+
+        local lord = dyer
+        local maxHp = sgs.QVariant(lord:getMaxHp() + 1)
+        room:setPlayerProperty(lord, "maxhp", maxHp)
+        room:setPlayerProperty(lord, "hp", maxHp)
+        return true
+    end,
+
+    can_trigger = function(self, target)
+        return true and target:isAlive()
+    end,
+}
+
 guaitai:addSkill(heixin)
 --guaitai:addSkill(yongyi)
 
@@ -695,6 +738,7 @@ BTliubei:addSkill("jijiang")
 BTsunquan:addSkill(guzong)
 BTsunquan:addSkill(guzong_extra)
 BTsunquan:addSkill(guzong_residue)
+BTsunquan:addSkill(yongzhi)
 BTsunquan:addSkill(luoxiu)
 BTsunquan:addSkill("zhiheng")
 BTsunquan:addSkill(heice)
@@ -747,4 +791,7 @@ sgs.LoadTranslationTable{
     [":luoxiu"] = "<b>锁定技，</b>准备阶段开始时，你获得判定区内所有牌。", 
     ["heice"] = "黑策",
     [":heice"] = "出牌阶段，你可以将任意一张黑桃牌当【桃园结义】使用。",
+
+    ["yongzhi"] = "拥谪",
+    [":yongzhi"] = "<b>锁定技，</b>当主公进入濒死状态时，若有忠臣存活，则主公增加1点体力上限并将体力值回复至体力上限。",
 }

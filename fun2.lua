@@ -689,38 +689,58 @@ heice = sgs.CreateViewAsSkill {
 yongzhi = sgs.CreateTriggerSkill {
     name = "yongzhi",
     frequency = sgs.Skill_Compulsory,
-    events = {sgs.AskForPeaches},
+    events = {sgs.AskForPeaches, sgs.FinishJudge},
 
     on_trigger = function(self, event, player, data)
         local room = player:getRoom()
-        local dying = data:toDying()
-        local dyer = dying.who
-        local role = dyer:getRole()
-        if role ~= "lord" then
-            return false
-        end
+        if event == sgs.AskForPeaches then
+            local dying = data:toDying()
+            local dyer = dying.who
+            local role = dyer:getRole()
+            if role ~= "lord" then
+                return false
+            end
 
-        local aliveLoyal = false
-        local playerList = room:getAlivePlayers()
-        for _, p in sgs.qlist(playerList) do
-            if p:getRole() == "loyalist"
-                and not p:hasSkill("guixin")
-                and not p:hasSkill("wuhun")
-            then
-                aliveLoyal = true
-                break
+            local aliveLoyal = false
+            local playerList = room:getAlivePlayers()
+            for _, p in sgs.qlist(playerList) do
+                if p:getRole() == "loyalist"
+                        and not p:hasSkill("guixin")
+                        and not p:hasSkill("wuhun")
+                then
+                    aliveLoyal = true
+                    break
+                end
+            end
+
+            if not aliveLoyal then
+                return false
+            end
+
+            local lord = dyer
+            local maxHp = sgs.QVariant(lord:getMaxHp() + 1)
+            room:setPlayerProperty(lord, "maxhp", maxHp)
+            room:setPlayerProperty(lord, "hp", maxHp)
+            return true
+        elseif event == sgs.FinishJudge then
+            local theJudge = data:toJudge()
+            local badGuy = theJudge.who
+            local role = badGuy:getRole()
+            if role ~= "lord" and role ~= "loyalist" then
+                return false
+            end
+
+            local judgeCard = theJudge.card
+            local suit = judgeCard:getSuit()
+            if suit == sgs.Card_Spade then
+                local maxHp = sgs.QVariant(badGuy:getMaxHp() + 1)
+                room:setPlayerProperty(badGuy, "maxhp", maxHp)
+            elseif suit == sgs.Card_Heart then
+                room:loseMaxHp(badGuy, 2)
+            elseif suit == sgs.Card_Diamond then
+                room:loseMaxHp(badGuy, 1)
             end
         end
-
-        if not aliveLoyal then
-            return false
-        end
-
-        local lord = dyer
-        local maxHp = sgs.QVariant(lord:getMaxHp() + 1)
-        room:setPlayerProperty(lord, "maxhp", maxHp)
-        room:setPlayerProperty(lord, "hp", maxHp)
-        return true
     end,
 
     can_trigger = function(self, target)
@@ -793,5 +813,5 @@ sgs.LoadTranslationTable{
     [":heice"] = "出牌阶段，你可以将任意一张黑桃牌当【桃园结义】使用。",
 
     ["yongzhi"] = "拥谪",
-    [":yongzhi"] = "<b>锁定技，</b>当主公进入濒死状态时，若有忠臣存活，则主公增加1点体力上限并将体力值回复至体力上限。",
+    [":yongzhi"] = "<b>锁定技，</b>当主公进入濒死状态时，若有忠臣存活，则主公增加1点体力上限并将体力值回复至体力上限。当主忠的红色判定牌生效后，将有好事发生。",
 }

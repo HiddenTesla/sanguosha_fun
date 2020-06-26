@@ -3,7 +3,7 @@ extension = sgs.Package("fun2")
 
 guaitai=sgs.General(extension, "guaitai$","shu", 5, false,true)
 BTliubei=sgs.General(extension, "BTliubei$","shu", 5, true)
-BTsunquan=sgs.General(extension, "BTsunquan$","wu", 4, true)
+BTsunquan=sgs.General(extension, "BTsunquan$","wu", 3, true)
 lingxi=sgs.General(extension, "lingxi","wu", 3, false, true)
 
 mashu2 = sgs.CreateDistanceSkill{

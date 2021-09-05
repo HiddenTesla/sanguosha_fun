@@ -5,6 +5,7 @@ sphuaxiong=sgs.General(extension, "sphuaxiong","qun", 80, true, true)
 haha=sgs.General(extension, "haha","shu", 7, true, true)
 feizei=sgs.General(extension, "feizei","wu", 3, true, true)
 jianggan=sgs.General(extension, "jianggan","wei", 4, true)
+yanbolu = sgs.General(extension, "yanbolu","wei", 4, true)
 
 zaiqiBT = sgs.CreateTriggerSkill{
     name = "zaiqiBT",
@@ -361,6 +362,51 @@ daoshu = sgs.CreateViewAsSkill{
     end,
 }
 
+function shuffleGender(player, skill)
+    local room = player:getRoom()
+    local judge = sgs.JudgeStruct()
+    judge.who = player
+    judge.pattern = "."
+    judge.reason = skill:objectName()
+    room:judge(judge)
+    
+    local card = judge.card
+    local currentIsMale = player:isMale()
+    local suit = card:getSuit()
+    local newGender = nil
+    if suit == sgs.Card_Spade then
+      newGender = sgs.General_Male
+    elseif suit == sgs.Card_Heart then
+      newGender = sgs.General_Female
+    elseif suit == sgs.Card_Diamond then
+      if currentIsMale then
+        newGender = sgs.General_Female
+      else
+        newGender = sgs.General_Male
+      end
+    end
+    
+    player:setGender(newGender)
+end
+
+junshen = sgs.CreateTriggerSkill {
+    name = "junshen" ,
+    frequency = sgs.Skill_Compulsory ,
+    events ={sgs.GameStart, sgs.EventPhaseStart, sgs.DamageInflicted} ,
+    on_trigger = function(self, event, player, data)
+        local room = player:getRoom()
+        if event == sgs.GameStart or (event == sgs.EventPhaseStart and player:getPhase() == sgs.Player_Start) then
+            shuffleGender(player, self)
+        elseif event == sgs.DamageInflicted then
+            local damage = data:toDamage()
+            if (damage.nature ~= sgs.DamageStruct_Thunder) and damage.from and
+                    (damage.from:isMale() ~= player:isMale()) then
+                return true
+            end
+        end
+    end,
+}
+
 spmenghuo:addSkill(zaihei)
 spmenghuo:addSkill(xianji)
 sphuaxiong:addSkill("benghuai")
@@ -372,6 +418,7 @@ feizei:addSkill(xunjie)
 feizei:addSkill(qingzhuang)
 feizei:addSkill(touxi)
 jianggan:addSkill(daoshu)
+yanbolu:addSkill(junshen)
 
 sgs.LoadTranslationTable {
     ["fun4"]="娱乐4",

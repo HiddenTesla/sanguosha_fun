@@ -386,6 +386,13 @@ function shuffleGender(player, skill)
       end
     end
     
+    player:loseAllMarks("@gender_male")
+    player:loseAllMarks("@gender_female")
+    if newGender == sgs.General_Male then
+        player:gainMark("@gender_male")
+    else
+        player:gainMark("@gender_female")
+    end
     player:setGender(newGender)
 end
 

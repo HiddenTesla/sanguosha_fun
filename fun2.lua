@@ -599,11 +599,19 @@ dutao = sgs.CreateTriggerSkill {
     end
 }
 
+function findExtraCardCount(markCount) 
+    local cardCount = 0
+    while cardCount * (cardCount + 1) <= markCount do
+        cardCount = cardCount + 1
+    end
+    return cardCount - 1
+end
+
 guzong_extra = sgs.CreateMaxCardsSkill {
     name = "#guzong_extra",
     extra_func = function(self, target)
-        local extra = target:getMark("@guzong") / 3
-        return math.floor(extra)
+        local extra = findExtraCardCount(target:getMark("@guzong"))
+        return extra
     end
 }
 
@@ -612,7 +620,7 @@ guzong_residue = sgs.CreateTargetModSkill {
     frequency = sgs.Skill_NotFrequent,
     pattern = "Slash",
     residue_func = function(self, player)
-        local extra = player:getMark("@guzong") / 3
+        local extra = findExtraCardCount(player:getMark("@guzong"))
         return math.floor(extra)
     end
 }
@@ -634,7 +642,7 @@ guzong = sgs.CreateTriggerSkill {
                 player:gainMark("@guzong", discarded)
             end
         elseif event == sgs.DrawNCards then
-            local extra = 1 + math.floor(player:getMark("@guzong") / 3)
+            local extra = findExtraCardCount(player:getMark("@guzong"))
             local count = data:toInt() + extra
             data:setValue(count)
         end

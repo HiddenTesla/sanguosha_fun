@@ -13,7 +13,7 @@ sphuanggai=sgs.General(extension, "sphuanggai","wu",10)
 shenhuatuo=sgs.General(extension, "shenhuatuo","god", 3, true, true)
 spguojia=sgs.General(extension, "spguojia","god", 30, true, true)
 spdongzhuo=sgs.General(extension, "spdongzhuo$","qun", 8)
-anu=sgs.General(extension, "anu","shu", 3, false)
+anu=sgs.General(extension, "anu","shu", 4, false)
 
 local shared = require("extensions/shared")
 
@@ -287,11 +287,19 @@ lanman=sgs.CreateTriggerSkill{
             log.from = player
             log.arg  = self:objectName()
 
-            room:drawCards(player,damage.damage,self:objectName())
-
-            local theRecover=sgs.RecoverStruct()
-            theRecover.recover=damage.damage
-            room:recover(player,theRecover)
+            local damageCount = damage.damage
+            room:drawCards(player, damageCount, self:objectName())
+            
+            for i = 1, damageCount + 1, 1 do
+              if player:getLostHp() > 0 then
+                local theRecover=sgs.RecoverStruct()
+                theRecover.recover = 1
+                room:recover(player,theRecover)
+              else
+                local maxHp = sgs.QVariant(player:getMaxHp() + 1)
+                room:setPlayerProperty(player, "maxhp", maxHp)
+              end
+            end
 
             room:sendLog(log)
             room:broadcastSkillInvoke(self:objectName())
